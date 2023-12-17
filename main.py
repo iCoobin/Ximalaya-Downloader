@@ -21,6 +21,7 @@ from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import selenium.common.exceptions
 import colorama
+from asyncio import Lock
 
 colorama.init(autoreset=True)
 logger = logging.getLogger('logger')
@@ -32,6 +33,7 @@ file_handler.setFormatter(formatter)
 logger.addHandler(file_handler)
 path = ""
 
+lock = Lock()
 
 class Ximalaya:
     def __init__(self):
@@ -183,8 +185,12 @@ class Ximalaya:
         print(f'{sound_name}下载完成！')
         logger.debug(f'{sound_name}下载完成！')
 
-    # 协程下载声音
     async def async_get_sound(self, sound_name, sound_url, album_name, session, path, num=None):
+        async with lock:
+            await self.async_get_sound2(sound_name, sound_url, album_name, session, path, num)
+
+    # 协程下载声音
+    async def async_get_sound2(self, sound_name, sound_url, album_name, session, path, num=None):
         retries = 3
         logger.debug(f'开始下载声音{sound_name}')
         if num is None:
